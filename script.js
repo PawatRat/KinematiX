@@ -90,16 +90,6 @@ document.querySelector('#move-button').addEventListener('click', function() {
         this.style.transform = "none";
         this.style.transition = "none";
     }, 1000)
-    // carElement.style.left = initial_pos + "px";
-    // set back to original position
-    // setTimeout(() => {
-    //     carElement.style.left = initial_pos + "px"; 
-    //     // slide_s.value = 0;
-    //     // slide_v.value = 0;
-    //     // slide_a.value = 0;
-    //     // slide_t.value = 0;
-    //     // graph_calculation.innerHTML = `v = {u} + {a}t<sup></sup>`;
-    // }, 1000);
 });
 
 // reset button
@@ -133,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let x_end = 600; 
     let gap_y = 90;
     let gap_x = 120;
-
+    const coefficient = 6;
 
     function drawGraph() {
         const time = slide_t.value;
@@ -156,25 +146,39 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.lineTo(x_pos,y_pos + 20);
         ctx.stroke();
 
-        ctx.beginPath();
-        ctx.arc(x_pos, y_pos-distance, 7, 0, Math.PI * 2, true);
-        ctx.stroke();
-        ctx.strokeText('x', x_pos, 15);
+
+
         // ctx.strokeText('t', x_end + 5, y_pos);
+        ctx.strokeText('x', x_pos, 15);
 
-
-        // Draw the curve based on the physics parameters
-        ctx.beginPath();
-        ctx.moveTo(x_pos,y_pos - distance);
-        // Use a quadratic function for the curve
-        for (let t = 0; t <= time*2; t++) {
-            const x = x_pos + t * 3;
-            const y = y_pos - distance - (a * t * t + b * t) * 1.5;
-            ctx.lineTo(x, y);
+        if (check) {
+            // Draw the curve based on the physics parameters
+            ctx.beginPath();
+            ctx.arc(x_pos, y_pos-distance, 7, 0, Math.PI * 2, true);
+            ctx.moveTo(x_pos,y_pos - distance);
+            // Use a quadratic function for the curve
+            for (let t = 0; t <= time*coefficient; t++) {
+                const x = x_pos + t;
+                const y = y_pos - distance - (0.5 * a * t * t + b * t);
+                ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = 'gray';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        } else {
+            ctx.beginPath();
+            ctx.arc(x_pos, y_pos - velocity, 7, 0, Math.PI * 2, true);
+            ctx.moveTo(x_pos,y_pos - velocity);
+            for (let t=0; t <= time*coefficient; t++) {
+                const x = x_pos + t;
+                const y = y_pos - velocity - (b + acceleration * t);
+                ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = 'gray';
+            ctx.lineWidth = 3;
+            ctx.stroke();
         }
-        ctx.strokeStyle = 'gray';
-        ctx.lineWidth = 3;
-        ctx.stroke();
+
 
         // Display the physics parameters on the canvas
         ctx.font = "15px 'Mitr', sans-serif";
@@ -201,25 +205,51 @@ document.addEventListener('DOMContentLoaded', function() {
         const distance = slide_s.value;
         const a = acceleration / 1000;
         const b = velocity / 200;
-        ctx.beginPath();
-        ctx.font = "15px 'Mitr', sans-serif";
-        ctx.moveTo(x_pos,y_pos - distance);
         t = 0;
-        const drawInterval = setInterval(() => {  
-            if (t > time*2) {
-                clearInterval(drawInterval);
-                return;
-            }
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawGraph();
-            ctx.fillText(`current Time: ${t/2}`, x_end-gap_x, y_pos - 20 - gap_y);
+        let count = 0;
+        ctx.font = "15px 'Mitr', sans-serif";
+        if (check) {
             ctx.beginPath();
-            const x = x_pos + t * 3;
-            const y = y_pos - distance - (a * t * t + b * t) * 1.5;
-            ctx.arc(x, y, 7, 0, Math.PI * 2, true);
-            ctx.stroke();
-            t+=2;
-        }, 20);
+            ctx.moveTo(x_pos,y_pos - distance);
+            const drawInterval = setInterval(() => {  
+                if (t > time*coefficient) {
+                    clearInterval(drawInterval);
+                    return;
+                }
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawGraph();
+                ctx.fillText(`current Time: ${count}`, x_end-gap_x, y_pos - 20 - gap_y);
+                ctx.beginPath();
+                const x = x_pos + t;
+                const y = y_pos - distance - (0.5 * a * t * t + b * t);
+                ctx.arc(x, y, 7, 0, Math.PI * 2, true);
+                ctx.stroke();
+                t+=coefficient;
+                count++;
+            }, 20);
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(x_pos,y_pos - velocity);
+            const drawInterval = setInterval(() => {  
+                if (t > time*coefficient) {
+                    clearInterval(drawInterval);
+                    return;
+                }
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawGraph();
+                ctx.fillText(`current Time: ${count}`, x_end-gap_x, y_pos - 20 - gap_y);
+                ctx.beginPath();
+                const x = x_pos + t;
+                const y = y_pos - velocity - (b + acceleration * t);
+                ctx.arc(x, y, 7, 0, Math.PI * 2, true);
+                ctx.stroke();
+                t+=coefficient;
+                count++;
+            }, 20);
+        }
     });
 
-}); 
+    checkbox.addEventListener('change', function() {
+        drawGraph();
+    });
+});
