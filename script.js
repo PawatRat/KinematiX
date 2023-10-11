@@ -145,14 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.moveTo(x_pos,20);
         ctx.lineTo(x_pos,y_pos + 20);
         ctx.stroke();
-
-
-
         // ctx.strokeText('t', x_end + 5, y_pos);
-        ctx.strokeText('x', x_pos, 15);
+        
 
         if (check) {
             // Draw the curve based on the physics parameters
+            ctx.strokeText('s', x_pos, 15);
             ctx.beginPath();
             ctx.arc(x_pos, y_pos-distance, 7, 0, Math.PI * 2, true);
             ctx.moveTo(x_pos,y_pos - distance);
@@ -166,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.lineWidth = 3;
             ctx.stroke();
         } else {
+            ctx.strokeText('v', x_pos, 15);
             ctx.beginPath();
             ctx.arc(x_pos, y_pos - velocity, 7, 0, Math.PI * 2, true);
             ctx.moveTo(x_pos,y_pos - velocity);
@@ -198,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial draw
     drawGraph();
 
+    // arc animation when click move button
     document.querySelector('#move-button').addEventListener('click', () => {
         const time = slide_t.value;
         const velocity = slide_v.value;
@@ -209,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let count = 0;
         ctx.font = "15px 'Mitr', sans-serif";
         if (check) {
+            ctx.strokeText('s', x_pos, 15);
             ctx.beginPath();
             ctx.moveTo(x_pos,y_pos - distance);
             const drawInterval = setInterval(() => {  
@@ -228,6 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 count++;
             }, 20);
         } else {
+            ctx.strokeText('v', x_pos, 15);
             ctx.beginPath();
             ctx.moveTo(x_pos,y_pos - velocity);
             const drawInterval = setInterval(() => {  
@@ -253,3 +255,94 @@ document.addEventListener('DOMContentLoaded', function() {
         drawGraph();
     });
 });
+
+// add data to table if click button save
+let data = [
+    // {
+    //     "name": 'initial',
+    //     "position": 0,
+    //     "velocity": 0, 
+    //     "acceleration": 0, 
+    //     "time": 0,
+    //     "distance": 0
+    // }
+]
+
+let count = 1;
+function write_new() {
+    let input = document.querySelector('.input-container input').value;
+    let t = slide_t.value;
+    let cal = slide_v.value*t + 0.5*slide_a.value*t*t;
+    let newData = {
+        "name": input,
+        "position": slide_s.value,
+        "velocity": slide_v.value,
+        "acceleration": slide_a.value,
+        "time": slide_t.value,
+        "distance": cal
+    }
+    count++;
+    data.push(newData);
+    add_one();
+}
+// // document.querySelector('#save').addEventListener('click', function() {
+// //     let input = document.querySelector('form input').value;
+// //     let cal = slide_v.value*t + 0.5*slide_a.value*t*t;
+// //     let newData = {
+// //         name: input,
+// //         position: slide_s.value,
+// //         velocity: slide_v.value,
+// //         acceleration: slide_a.value,
+// //         time: slide_t.value,
+// //         distance: cal
+// //     }
+// //     count++;
+// //     data.push(newData);
+// // });
+
+// // display the data
+function showDataRow() {
+    let count_data = Object.keys(data).length;
+    for (let i=0; i<count_data; i++) {
+        let table = document.querySelector('table');
+        let row = table.insertRow(count);
+        for (let j=0; j<6; j++) {
+            let cx = row.insertCell(j);
+            cx.innerHTML = data[i][Object.keys(data[0])[j]];
+        }
+    }
+}
+
+showDataRow();
+
+function add_one() {
+    let count_data = Object.keys(data).length;
+    let table = document.querySelector('table');
+    let row = table.insertRow(count);
+    for (let j=0; j<6; j++) {
+        let cx = row.insertCell(j);
+        cx.innerHTML = data[count_data-1][Object.keys(data[0])[j]];
+    }
+}
+
+// // document.querySelector('#save').addEventListener('click', function() {
+// //     let table = document.querySelector('#data-table');
+// //     let end = slide_v.value*t + 0.5*slide_a.value*t*t;
+
+// //     let row = table.insertRow(count);
+// //     let c1 = row.insertCell(0);
+// //     let c2 = row.insertCell(1);
+// //     let c3 = row.insertCell(2);
+// //     let c4 = row.insertCell(3);
+// //     let c5 = row.insertCell(4);
+
+// //     c1.innerHTML = count;
+// //     c1.innerHTML = `{slide_s.value}`;
+
+// //     // let time = slide_t.value;
+// //     // let velocity = slide_v.value;
+// //     // let acceleration = slide_a.value;
+// //     // let distance = slide_s.value;
+// //     data.push([slide_t.value, slide_v.value, acceleration, distance]);
+// //     count++;
+// // });
